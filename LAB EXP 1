@@ -1,0 +1,82 @@
+// --- Pin setup for 7-segment display ---
+const int segmentA = 3;  
+const int segmentB = 8;  
+const int segmentC = 2;  
+const int segmentD = 7;  
+const int segmentE = 6;  
+const int segmentF = 4;  
+const int segmentG = 5;  
+
+// --- Push button pins ---
+const int buttonIncrement = 10;
+const int buttonReset = 11;
+
+// --- Variables ---
+int count = 0;
+int lastButtonStateInc = HIGH;
+int lastButtonStateReset = HIGH;
+
+// Lookup table for digits 0–9 (Common Cathode)
+const byte numbers[10][7] = {
+  {0,0,0,0,0,0,1}, // 0
+  {1,0,0,1,1,1,1}, // 1
+  {0,0,1,0,0,1,0}, // 2
+  {0,0,0,0,1,1,0}, // 3
+  {1,0,0,1,1,0,0}, // 4
+  {0,1,0,0,1,0,0}, // 5
+  {0,1,0,0,0,0,0}, // 6
+  {0,0,0,1,1,1,1}, // 7
+  {0,0,0,0,0,0,0}, // 8
+  {0,0,0,0,1,0,0}  // 9
+};
+
+void setup() {
+  // Set all segment pins as OUTPUT
+  for (int i = 2; i <= 8; i++) {
+    pinMode(i, OUTPUT);
+  }
+
+  // Set button pins as INPUT_PULLUP
+  pinMode(buttonIncrement, INPUT_PULLUP);
+  pinMode(buttonReset, INPUT_PULLUP);
+
+  // Start serial monitor (optional)
+  Serial.begin(9600);
+  displayDigit(count);
+}
+
+void loop() {
+  int currentInc = digitalRead(buttonIncrement);
+  int currentReset = digitalRead(buttonReset);
+
+  // Increment button logic (active LOW)
+  if (currentInc == HIGH && lastButtonStateInc == LOW) {
+    count++;
+    if (count > 9) count = 0;
+    displayDigit(count);
+    Serial.print("Count: "); Serial.println(count);
+    delay(300); // debounce delay
+  }
+
+  // Reset button logic (active LOW)
+  if (currentReset == HIGH && lastButtonStateReset == LOW) {
+    count = 0;
+    displayDigit(count);
+    Serial.println("Reset!");
+    delay(300); // debounce delay
+  }
+
+  lastButtonStateInc = currentInc;
+  lastButtonStateReset = currentReset;
+}
+
+// --- Function to display a digit on 7-segment ---
+void displayDigit(int num) {
+  digitalWrite(segmentA, numbers[num][0]);
+  digitalWrite(segmentB, numbers[num][1]);
+  digitalWrite(segmentC, numbers[num][2]);
+  digitalWrite(segmentD, numbers[num][3]);
+  digitalWrite(segmentE, numbers[num][4]);
+  digitalWrite(segmentF, numbers[num][5]);
+  digitalWrite(segmentG, numbers[num][6]);
+}
